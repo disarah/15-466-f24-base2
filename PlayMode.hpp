@@ -51,6 +51,7 @@ struct PlayMode : Mode {
 	float mush_timer = mush_spawn_rate;
 
 	uint8_t score = 0;
+	float speedup = 1.f;
 
 	struct Mushroom {
 		Scene::Transform *mushroom = nullptr;
