@@ -2,7 +2,9 @@
 
 Author: Sarah Di (sarahdi)
 
-Design: (TODO: In two sentences or fewer, describe what is new and interesting about your game.)
+Design: My game is based on the snake game but with a raccoon picking mushrooms.
+One thing that is different from the original snake is that if you eat a red mushroom
+the keypad direction will be disoriented.
 
 Screen Shot:
 
@@ -10,6 +12,6 @@ Screen Shot:
 
 How To Play:
 
-(TODO: describe the controls and (if needed) goals/strategy.)
+WASD keys to control the raccoon. Collect mushrooms.
 
 This game was built with [NEST](NEST.md).

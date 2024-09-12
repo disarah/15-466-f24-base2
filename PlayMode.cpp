@@ -40,16 +40,55 @@ PlayMode::PlayMode() : scene(*hexapod_scene) {
 	//get pointers to leg for convenience:
 	for (auto &transform : scene.transforms) {
 		if (transform.name == "Raccoon") raccoon = &transform;
-		else if (transform.name == "RedMush") red_mush = &transform;
-		else if (transform.name == "BrownMush") brown_mush = &transform;
+		else if (transform.name == "RedMush") red_mush0 = &transform;
+		else if (transform.name == "RedMush.001") red_mush1 = &transform;
+		else if (transform.name == "BrownMush") brown_mush0 = &transform;
+		else if (transform.name == "BrownMush.001") brown_mush1 = &transform;
+		else if (transform.name == "BrownMush.002") brown_mush2 = &transform;
+		else if (transform.name == "BrownMush.003") brown_mush3 = &transform;
+		else if (transform.name == "BrownMush.004") brown_mush4 = &transform;
+		else if (transform.name == "BrownMush.005") brown_mush5 = &transform;
+		else if (transform.name == "BrownMush.006") brown_mush6 = &transform;
+		else if (transform.name == "BrownMush.007") brown_mush7 = &transform;
+
 	}
 	if (raccoon == nullptr) throw std::runtime_error("Raccoon not found.");
-	if (red_mush == nullptr) throw std::runtime_error("Red Mushroom not found.");
-	if (brown_mush == nullptr) throw std::runtime_error("Brown Mushroom not found.");
+
+	if (red_mush0 == nullptr) throw std::runtime_error("Red Mushroom not found.");
+	if (red_mush1 == nullptr) throw std::runtime_error("Red Mushroom not found.");
+
+	if (brown_mush0 == nullptr) throw std::runtime_error("Brown Mushroom not found.");
+	if (brown_mush1 == nullptr) throw std::runtime_error("Brown Mushroom not found.");
+	if (brown_mush2 == nullptr) throw std::runtime_error("Brown Mushroom not found.");
+	if (brown_mush3 == nullptr) throw std::runtime_error("Brown Mushroom not found.");
+	if (brown_mush4 == nullptr) throw std::runtime_error("Brown Mushroom not found.");
+	if (brown_mush5 == nullptr) throw std::runtime_error("Brown Mushroom not found.");
+	if (brown_mush6 == nullptr) throw std::runtime_error("Brown Mushroom not found.");
+	if (brown_mush7 == nullptr) throw std::runtime_error("Brown Mushroom not found.");
+
+	raccoon_bbox = glm::vec2(0.25f);
+	mush_bbox = glm::vec2(0.1f,0.1f); 		// use for all mushrooms
+
+	red_mush0->position = glm::vec3(1.f,0.f,0.f);
+	brown_mush0->position = glm::vec3(-1.f,0.f,0.f);
+
+	mushrooms[0].mushroom = red_mush0;
+	mushrooms[1].mushroom = red_mush1;
+	mushrooms[2].mushroom = brown_mush0;
+	mushrooms[3].mushroom = brown_mush1;
+	mushrooms[4].mushroom = brown_mush2;
+	mushrooms[5].mushroom = brown_mush3;
+	mushrooms[6].mushroom = brown_mush4;
+	mushrooms[7].mushroom = brown_mush5;
+	mushrooms[8].mushroom = brown_mush6;
+	mushrooms[9].mushroom = brown_mush7;
+
+	mushrooms[0].on_screen = true;
+	mushrooms[2].on_screen = true;
 
 	raccoon_rotation = raccoon->rotation;
-	red_mush_rotation = red_mush->rotation;
-	brown_mush_rotation = brown_mush->rotation;
+	red_mush_rotation = red_mush0->rotation; 		// use for all mushrooms
+	brown_mush_rotation = brown_mush0->rotation;	// use for all mushrooms
 
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
@@ -107,36 +146,28 @@ void PlayMode::update(float elapsed) {
 	wobble += elapsed / 10.0f;
 	wobble -= std::floor(wobble);
 
-	red_mush->rotation = red_mush_rotation * glm::angleAxis(
-		glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))),
-		glm::vec3(0.0f, 1.0f, 0.0f)
-	);
+	red_mush0->rotation = red_mush_rotation * glm::angleAxis(glm::radians(-360.f * wobble), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	brown_mush->rotation = brown_mush_rotation * glm::angleAxis(
-		glm::radians(5.0f * std::sin(wobble * 2.0f * float(M_PI))),
-		glm::vec3(0.0f, 1.0f, 0.0f)
-	);
+	brown_mush0->rotation = brown_mush_rotation * glm::angleAxis(glm::radians(360.f * wobble), glm::vec3(0.0f, 0.0f, 1.0f));
 
-	//move camera:
 	{
-
-		//combine inputs into a move:
+		//Make inputs move around raccoon
 		constexpr float PlayerSpeed = 30.0f;
 		glm::vec2 move = glm::vec2(0.0f);
 		if (left.pressed && !right.pressed) {
-			move.x =-1.0f;
+			move.x =-1.0f * flipped;
 			raccoon->rotation = raccoon_rotation * glm::angleAxis(glm::radians(-90.f),glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 		if (!left.pressed && right.pressed) {
-			move.x = 1.0f;
+			move.x = 1.0f * flipped;
 			raccoon->rotation = raccoon_rotation * glm::angleAxis(glm::radians(90.f),glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 		if (down.pressed && !up.pressed) {
-			move.y =-1.0f;
+			move.y =-1.0f * flipped;
 			raccoon->rotation = raccoon_rotation * glm::angleAxis(glm::radians(0.f),glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 		if (!down.pressed && up.pressed) {
-			move.y = 1.0f;
+			move.y = 1.0f * flipped;
 			raccoon->rotation = raccoon_rotation * glm::angleAxis(glm::radians(180.f),glm::vec3(0.0f, 0.0f, 1.0f));
 		}
 
@@ -146,9 +177,12 @@ void PlayMode::update(float elapsed) {
 		glm::mat4x3 frame = raccoon->make_local_to_parent();
 		glm::vec3 frame_right = frame[0] * raccoon->rotation;
 		glm::vec3 up = frame[1] * raccoon->rotation;
-		//glm::vec3 frame_forward = frame[2];
 
 		raccoon->position += move.x * frame_right + move.y * up;
+
+		// clamp to within grassy area
+		raccoon->position.x = std::clamp(raccoon->position.x, -3.2f, 3.2f);
+		raccoon->position.y = std::clamp(raccoon->position.y, -3.f, 2.2f);
 	}
 
 	//reset button press counters:
@@ -156,6 +190,37 @@ void PlayMode::update(float elapsed) {
 	right.downs = 0;
 	up.downs = 0;
 	down.downs = 0;
+
+	// check if raccoon collides with any mushrooms
+	// https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
+	// barely a bbox, more like a bsquare
+
+	std::cout << raccoon_bbox.x << raccoon_bbox.y << std::endl;
+
+	float rminX = raccoon->position.x - raccoon_bbox.x;
+	float rmaxX = raccoon->position.x + raccoon_bbox.x;
+	float rminY = raccoon->position.y - raccoon_bbox.y;
+	float rmaxY = raccoon->position.y + raccoon_bbox.y;
+
+	std::cout << rminX << rmaxX << rminY << rmaxY << std::endl;
+	for (uint32_t i = 0; i < 10; i++) {
+		Mushroom m = mushrooms[i];
+		float mminX = m.mushroom->position.x - mush_bbox.x;
+		float mmaxX = m.mushroom->position.x + mush_bbox.x;
+		float mminY = m.mushroom->position.y - mush_bbox.y;
+		float mmaxY = m.mushroom->position.y + mush_bbox.y;
+		if (mminX <= rmaxX && mmaxX >= rminX && mminY <= rmaxY && mmaxY >= rminY){
+		// move mushroom out of frame
+			if(m.on_screen){ // should definitely occur but to be cautious
+				m.on_screen = false;
+				m.mushroom->position = glm::vec3(5.f);
+			}
+			if(i < 2) { // if red mushroom set flipped to -1
+				flipped = -1;
+			}
+		}
+	}
+
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
@@ -167,7 +232,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	glUseProgram(lit_color_texture_program->program);
 	glUniform1i(lit_color_texture_program->LIGHT_TYPE_int, 1);
 	glUniform3fv(lit_color_texture_program->LIGHT_DIRECTION_vec3, 1, glm::value_ptr(glm::vec3(0.0f, 0.0f,-1.0f)));
-	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.0f, 1.0f, 0.95f)));
+	glUniform3fv(lit_color_texture_program->LIGHT_ENERGY_vec3, 1, glm::value_ptr(glm::vec3(1.f, 1.0f, 0.f)));
 	glUseProgram(0);
 
 	glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
@@ -192,12 +257,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 		));
 
 		constexpr float H = 0.09f;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse",
-			glm::vec3(-aspect + 0.1f * H, -1.0 + 0.1f * H, 0.0),
-			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
-			glm::u8vec4(0x00, 0x00, 0x00, 0x00));
 		float ofs = 2.0f / drawable_size.y;
-		lines.draw_text("Mouse motion rotates camera; WASD moves; escape ungrabs mouse",
+		lines.draw_text("Use WASD to move",
 			glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + 0.1f * H + ofs, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0xff, 0xff, 0xff, 0x00));

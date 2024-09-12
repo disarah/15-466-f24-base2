@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <deque>
+#include <array>
 
 struct PlayMode : Mode {
 	PlayMode();
@@ -30,8 +31,29 @@ struct PlayMode : Mode {
 	// raccoon
 	Scene::Transform *raccoon = nullptr;
 
-	Scene::Transform *red_mush = nullptr;
-	Scene::Transform *brown_mush = nullptr;
+	Scene::Transform *red_mush0 = nullptr;
+	Scene::Transform *red_mush1 = nullptr;
+
+	Scene::Transform *brown_mush0 = nullptr;
+	Scene::Transform *brown_mush1 = nullptr;
+	Scene::Transform *brown_mush2 = nullptr;
+	Scene::Transform *brown_mush3 = nullptr;
+	Scene::Transform *brown_mush4 = nullptr;
+	Scene::Transform *brown_mush5 = nullptr;
+	Scene::Transform *brown_mush6 = nullptr;
+	Scene::Transform *brown_mush7 = nullptr;
+
+	float flipped = 1.f;	// eaten a bad mushroom
+
+	struct Mushroom {
+		Scene::Transform *mushroom = nullptr;
+		bool on_screen = false;
+	};
+
+	Mushroom mushrooms[10];
+	
+	glm::vec2 raccoon_bbox;
+	glm::vec2 mush_bbox;
 
 	glm::quat raccoon_rotation;
 	glm::quat red_mush_rotation;
