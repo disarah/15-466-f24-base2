@@ -43,8 +43,14 @@ struct PlayMode : Mode {
 	Scene::Transform *brown_mush6 = nullptr;
 	Scene::Transform *brown_mush7 = nullptr;
 
+	const float red_effect_rate = 5.f;
+	const float mush_spawn_rate = 3.f;
+	
 	float flipped = 1.f;	// eaten a bad mushroom
-	float timer = 5.f;
+	float timer = red_effect_rate;
+	float mush_timer = mush_spawn_rate;
+
+	uint8_t score = 0;
 
 	struct Mushroom {
 		Scene::Transform *mushroom = nullptr;
@@ -57,8 +63,7 @@ struct PlayMode : Mode {
 	glm::vec2 mush_bbox;
 
 	glm::quat raccoon_rotation;
-	glm::quat red_mush_rotation;
-	glm::quat brown_mush_rotation;
+	glm::quat mush_rotation;
 	float wobble = 0.0f;
 	
 	//camera:

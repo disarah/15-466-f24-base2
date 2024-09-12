@@ -37,7 +37,9 @@ Load< Scene > hexapod_scene(LoadTagDefault, []() -> Scene const * {
 });
 
 PlayMode::PlayMode() : scene(*hexapod_scene) {
-	//get pointers to leg for convenience:
+	//https://en.cppreference.com/w/cpp/numeric/random/rand#:~:text=If%20rand()%20is%20used,of%20values%20on%20successive%20calls.
+	std::srand(std::time(nullptr)); 
+
 	for (auto &transform : scene.transforms) {
 		if (transform.name == "Raccoon") raccoon = &transform;
 		else if (transform.name == "RedMush") red_mush0 = &transform;
@@ -73,22 +75,21 @@ PlayMode::PlayMode() : scene(*hexapod_scene) {
 	brown_mush0->position = glm::vec3(-1.f,0.f,0.f);
 
 	mushrooms[0].mushroom = red_mush0;
-	mushrooms[1].mushroom = red_mush1;
-	mushrooms[2].mushroom = brown_mush0;
-	mushrooms[3].mushroom = brown_mush1;
-	mushrooms[4].mushroom = brown_mush2;
-	mushrooms[5].mushroom = brown_mush3;
+	mushrooms[1].mushroom = brown_mush0;
+	mushrooms[2].mushroom = brown_mush1;
+	mushrooms[3].mushroom = brown_mush2;
+	mushrooms[4].mushroom = brown_mush3;
+	mushrooms[5].mushroom = red_mush1;
 	mushrooms[6].mushroom = brown_mush4;
 	mushrooms[7].mushroom = brown_mush5;
 	mushrooms[8].mushroom = brown_mush6;
 	mushrooms[9].mushroom = brown_mush7;
 
 	mushrooms[0].on_screen = true;
-	mushrooms[2].on_screen = true;
+	mushrooms[1].on_screen = true;
 
 	raccoon_rotation = raccoon->rotation;
-	red_mush_rotation = red_mush0->rotation; 		// use for all mushrooms
-	brown_mush_rotation = brown_mush0->rotation;	// use for all mushrooms
+	mush_rotation = red_mush0->rotation; 		// use for all mushrooms
 
 	//get pointer to camera for convenience:
 	if (scene.cameras.size() != 1) throw std::runtime_error("Expecting scene to have exactly one camera, but it has " + std::to_string(scene.cameras.size()));
@@ -146,9 +147,11 @@ void PlayMode::update(float elapsed) {
 	wobble += elapsed / 10.0f;
 	wobble -= std::floor(wobble);
 
-	red_mush0->rotation = red_mush_rotation * glm::angleAxis(glm::radians(-360.f * wobble), glm::vec3(0.0f, 0.0f, 1.0f));
-
-	brown_mush0->rotation = brown_mush_rotation * glm::angleAxis(glm::radians(360.f * wobble), glm::vec3(0.0f, 0.0f, 1.0f));
+	for (Mushroom m : mushrooms){
+		if(m.on_screen){
+			m.mushroom->rotation = mush_rotation * glm::angleAxis(glm::radians(-360.f * wobble), glm::vec3(0.0f, 0.0f, 1.0f));
+		}
+	}
 
 	{
 		//Make inputs move around raccoon
@@ -206,29 +209,37 @@ void PlayMode::update(float elapsed) {
 		float mmaxX = m.mushroom->position.x + mush_bbox.x;
 		float mminY = m.mushroom->position.y - mush_bbox.y;
 		float mmaxY = m.mushroom->position.y + mush_bbox.y;
-		if (mminX <= rmaxX && mmaxX >= rminX && mminY <= rmaxY && mmaxY >= rminY){
-		// move mushroom out of frame
-			if(m.on_screen){ // should definitely occur but to be cautious
-				m.on_screen = false;
-				m.mushroom->position = glm::vec3(5.f);
-			}
-			if(i < 2) { // if red mushroom set flipped to -1
+		if (mminX <= rmaxX && mmaxX >= rminX && mminY <= rmaxY && mmaxY >= rminY && mushrooms[i].on_screen){ // move mushroom out of frame
+			mushrooms[i].on_screen = false;
+			mushrooms[i].mushroom->position = glm::vec3(5.f, 5.f, 0.f);
+			if(i%5 == 0) { // if red mushroom set flipped to -1
 				flipped = -1;
-				timer = 5.f; // 5 seconds of flipped
+				timer = red_effect_rate;
 			}
 		}
 	}
 
-	if(flipped == -1){
-		timer -= elapsed;
+	// red mushroom effects
+	if(flipped == -1) timer = std::max(timer - elapsed, 0.f);
+	if(timer<=0.f) flipped = 1;
+
+	// add a new mushroom to screen every x seconds
+	mush_timer = std::max(mush_timer - elapsed, 0.f);
+
+	if(mush_timer <= 0.f) {
+		for(uint32_t j = 0; j < 10; j++){ // find first off screen mushroom
+			if(!mushrooms[j].on_screen){
+				
+				mushrooms[j].on_screen = true;
+				// https://stackoverflow.com/questions/686353/random-float-number-generation
+				mushrooms[j].mushroom->position.x = -3.2f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.4f)));
+				mushrooms[j].mushroom->position.y = -3.f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(5.2f)));
+				std::cout << "Position" << mushrooms[j].mushroom->position.x << mushrooms[j].mushroom->position.y << std::endl;
+				break;
+			}
+		}
+		mush_timer = mush_spawn_rate;
 	}
-
-	timer = std::max(timer, 0.f);
-
-	if(timer==0.f){ // red mushroom wears off
-		flipped = 1;
-	}
-
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
@@ -266,7 +277,7 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 
 		constexpr float H = 0.09f;
 		float ofs = 2.0f / drawable_size.y;
-		lines.draw_text("Use WASD to move",
+		lines.draw_text("W A S D",
 			glm::vec3(-aspect + 0.1f * H + ofs, -1.0 + 0.1f * H + ofs, 0.0),
 			glm::vec3(H, 0.0f, 0.0f), glm::vec3(0.0f, H, 0.0f),
 			glm::u8vec4(0xff, 0xff, 0xff, 0x00));
