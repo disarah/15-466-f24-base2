@@ -44,6 +44,7 @@ struct PlayMode : Mode {
 	Scene::Transform *brown_mush7 = nullptr;
 
 	float flipped = 1.f;	// eaten a bad mushroom
+	float timer = 5.f;
 
 	struct Mushroom {
 		Scene::Transform *mushroom = nullptr;

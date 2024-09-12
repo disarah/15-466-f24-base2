@@ -195,14 +195,11 @@ void PlayMode::update(float elapsed) {
 	// https://developer.mozilla.org/en-US/docs/Games/Techniques/3D_collision_detection
 	// barely a bbox, more like a bsquare
 
-	std::cout << raccoon_bbox.x << raccoon_bbox.y << std::endl;
-
 	float rminX = raccoon->position.x - raccoon_bbox.x;
 	float rmaxX = raccoon->position.x + raccoon_bbox.x;
 	float rminY = raccoon->position.y - raccoon_bbox.y;
 	float rmaxY = raccoon->position.y + raccoon_bbox.y;
 
-	std::cout << rminX << rmaxX << rminY << rmaxY << std::endl;
 	for (uint32_t i = 0; i < 10; i++) {
 		Mushroom m = mushrooms[i];
 		float mminX = m.mushroom->position.x - mush_bbox.x;
@@ -217,8 +214,19 @@ void PlayMode::update(float elapsed) {
 			}
 			if(i < 2) { // if red mushroom set flipped to -1
 				flipped = -1;
+				timer = 5.f; // 5 seconds of flipped
 			}
 		}
+	}
+
+	if(flipped == -1){
+		timer -= elapsed;
+	}
+
+	timer = std::max(timer, 0.f);
+
+	if(timer==0.f){ // red mushroom wears off
+		flipped = 1;
 	}
 
 }
