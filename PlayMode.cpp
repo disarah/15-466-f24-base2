@@ -217,9 +217,14 @@ void PlayMode::update(float elapsed) {
 				timer = red_effect_rate;
 				score +=3;
 				speedup = std::max(speedup - 0.3f, 0.01f);
+				raccoon->scale *= 0.9f;
+				raccoon_bbox *= 0.9f;
+
 			} else {
 				speedup = std::max(speedup + 0.05f, 0.01f);
 				score +=1;
+				raccoon->scale *= 1.1f;
+				raccoon_bbox *= 1.1f;
 			}
 		}
 	}
@@ -234,7 +239,6 @@ void PlayMode::update(float elapsed) {
 	if(mush_timer <= 0.f) {
 		for(uint32_t j = 0; j < 10; j++){ // find first off screen mushroom
 			if(!mushrooms[j].on_screen){
-				
 				mushrooms[j].on_screen = true;
 				// https://stackoverflow.com/questions/686353/random-float-number-generation
 				mushrooms[j].mushroom->position.x = -3.2f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.4f)));
@@ -244,6 +248,8 @@ void PlayMode::update(float elapsed) {
 		}
 		mush_timer = mush_spawn_rate;
 	}
+
+
 }
 
 void PlayMode::draw(glm::uvec2 const &drawable_size) {
