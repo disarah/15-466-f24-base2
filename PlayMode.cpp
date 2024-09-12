@@ -123,17 +123,29 @@ void PlayMode::update(float elapsed) {
 		//combine inputs into a move:
 		constexpr float PlayerSpeed = 30.0f;
 		glm::vec2 move = glm::vec2(0.0f);
-		if (left.pressed && !right.pressed) move.x =-1.0f;
-		if (!left.pressed && right.pressed) move.x = 1.0f;
-		if (down.pressed && !up.pressed) move.y =-1.0f;
-		if (!down.pressed && up.pressed) move.y = 1.0f;
+		if (left.pressed && !right.pressed) {
+			move.x =-1.0f;
+			raccoon->rotation = raccoon_rotation * glm::angleAxis(glm::radians(-90.f),glm::vec3(0.0f, 0.0f, 1.0f));
+		}
+		if (!left.pressed && right.pressed) {
+			move.x = 1.0f;
+			raccoon->rotation = raccoon_rotation * glm::angleAxis(glm::radians(90.f),glm::vec3(0.0f, 0.0f, 1.0f));
+		}
+		if (down.pressed && !up.pressed) {
+			move.y =-1.0f;
+			raccoon->rotation = raccoon_rotation * glm::angleAxis(glm::radians(0.f),glm::vec3(0.0f, 0.0f, 1.0f));
+		}
+		if (!down.pressed && up.pressed) {
+			move.y = 1.0f;
+			raccoon->rotation = raccoon_rotation * glm::angleAxis(glm::radians(180.f),glm::vec3(0.0f, 0.0f, 1.0f));
+		}
 
 		//make it so that moving diagonally doesn't go faster:
 		if (move != glm::vec2(0.0f)) move = glm::normalize(move) * PlayerSpeed * elapsed;
 
 		glm::mat4x3 frame = raccoon->make_local_to_parent();
-		glm::vec3 frame_right = frame[0];
-		glm::vec3 up = frame[1];
+		glm::vec3 frame_right = frame[0] * raccoon->rotation;
+		glm::vec3 up = frame[1] * raccoon->rotation;
 		//glm::vec3 frame_forward = frame[2];
 
 		raccoon->position += move.x * frame_right + move.y * up;
