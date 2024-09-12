@@ -234,7 +234,6 @@ void PlayMode::update(float elapsed) {
 				// https://stackoverflow.com/questions/686353/random-float-number-generation
 				mushrooms[j].mushroom->position.x = -3.2f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(6.4f)));
 				mushrooms[j].mushroom->position.y = -3.f + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(5.2f)));
-				std::cout << "Position" << mushrooms[j].mushroom->position.x << mushrooms[j].mushroom->position.y << std::endl;
 				break;
 			}
 		}
